@@ -35,7 +35,6 @@ int blueX, blueY;
 int reticuleX, reticuleY;
 
 int direction;
-int player_VelY;
 int projectileX, projectileY;
 int proVelX, proVelY;
 int launch_speed;
@@ -67,7 +66,6 @@ void start_game()
 
 	/* Initialise movement variables */
 	direction = 0;
-	player_VelY = 0;
 	launch_speed = 0;
 
 	/* Draw the UI */

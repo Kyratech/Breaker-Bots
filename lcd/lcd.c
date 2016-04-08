@@ -15,6 +15,8 @@
 
 lcd display;
 
+void draw_pixel(uint16_t x, uint16_t y, uint16_t colour);
+
 void init_lcd()
 {
     /* Enable extended memory interface with 10 bit addressing */
@@ -182,59 +184,35 @@ void fill_rectangle_indexed(rectangle r, uint16_t* col)
             write_data16(*col++);
 }
 
+void draw_pixel(uint16_t x, uint16_t y, uint16_t colour)
+{
+	if(x < LCDHEIGHT && y < LCDWIDTH)
+	{
+		write_cmd(COLUMN_ADDRESS_SET);
+		write_data16(x);
+		write_data16(x);
+		write_cmd(PAGE_ADDRESS_SET);
+		write_data16(y);
+		write_data16(y);
+		write_cmd(MEMORY_WRITE);
+	        write_data16(colour);
+	}
+}
+
 void fill_sprite(sprite* spr, uint16_t posX, uint16_t posY)
 {
-    write_cmd(COLUMN_ADDRESS_SET);
-    write_data16(posX);
-    write_data16(posX + spr->width - 1);
-    write_cmd(PAGE_ADDRESS_SET);
-    write_data16(posY);
-    write_data16(posY + spr->height - 1);
-    write_cmd(MEMORY_WRITE);
-/*  uint16_t x, y;
-    for(x=r.left; x<=r.right; x++)
-        for(y=r.top; y<=r.bottom; y++)
-            write_data16(col);
-*/
-    uint16_t wpixels = spr->width;
-    uint16_t hpixels = spr->height;
-    uint8_t mod8, div8;
-    uint16_t odm8, odd8;
-    if (hpixels > wpixels) {
-        mod8 = hpixels & 0x07;
-        div8 = hpixels >> 3;
-        odm8 = wpixels*mod8;
-        odd8 = wpixels*div8;
-    } else {
-        mod8 = wpixels & 0x07;
-        div8 = wpixels >> 3;
-        odm8 = hpixels*mod8;
-        odd8 = hpixels*div8;
-    }
+    uint16_t i,j;
 
-    uint16_t counter = 0;
-
-    uint8_t pix1 = odm8 & 0x07;
-    while(pix1--)
+    for(i = 0; i < spr->height; i++)
     {
-	//if(spr->pixels[counter] != spr->trans_colour)
-	//{
-        	write_data16(spr->pixels[counter]);
-	//}
-	counter++;
-    }
-
-    uint16_t pix8 = odd8 + (odm8 >> 3);
-    while(pix8--) {
-	uint8_t i;
-	for(i=0; i<8; i++)
+	for(j = 0; j < spr->width; j++)
 	{
-		//if(spr->pixels[counter] != spr->trans_colour)
-		//{
-       			write_data16(spr->pixels[counter]);
-		//}
-		counter++;
-	}        
+		uint16_t col = spr->pixels[i * spr->width + j];
+		if(col != spr->trans_colour)
+		{
+        		draw_pixel(posX + j, posY + i, col);
+		}
+	}
     }
 }
 
