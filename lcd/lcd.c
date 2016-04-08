@@ -216,18 +216,25 @@ void fill_sprite(sprite* spr, uint16_t posX, uint16_t posY)
 
     uint8_t pix1 = odm8 & 0x07;
     while(pix1--)
-        write_data16(spr->pixels[counter++]);
+    {
+	//if(spr->pixels[counter] != spr->trans_colour)
+	//{
+        	write_data16(spr->pixels[counter]);
+	//}
+	counter++;
+    }
 
     uint16_t pix8 = odd8 + (odm8 >> 3);
     while(pix8--) {
-        write_data16(spr->pixels[counter++]);
-        write_data16(spr->pixels[counter++]);
-        write_data16(spr->pixels[counter++]);
-        write_data16(spr->pixels[counter++]);
-        write_data16(spr->pixels[counter++]);
-        write_data16(spr->pixels[counter++]);
-        write_data16(spr->pixels[counter++]);
-        write_data16(spr->pixels[counter++]);
+	uint8_t i;
+	for(i=0; i<8; i++)
+	{
+		//if(spr->pixels[counter] != spr->trans_colour)
+		//{
+       			write_data16(spr->pixels[counter]);
+		//}
+		counter++;
+	}        
     }
 }
 
@@ -237,12 +244,35 @@ void draw_level(uint8_t* level_map, uint16_t colour, uint16_t start, uint16_t en
 	rectangle blank_out = {start, end, 0, 225};
 	fill_rectangle(blank_out, BLACK);
 
+	/* Clamp to screen dimensions; exit if the area would start after the end. */
+	if(start > LCDHEIGHT)
+		return;
+	uint16_t high = (end > LCDHEIGHT) ? LCDHEIGHT : end;
+
 	unsigned i;
-	for(i = start; i <= end; i++)
+	for(i = start; i <= high; i++)
 	{
 		rectangle ground = {i, i, level_map[i], 225};
 		fill_rectangle(ground, colour);
 	}
+}
+
+/* Fill a rectangle with the colours that match the level geometry */
+void draw_background(uint8_t* level_map, uint16_t colour, rectangle rec)
+{
+	fill_rectangle(rec, BLACK);
+
+	unsigned i;
+        for(i = rec.left; i <= rec.right; i++)
+        {
+		/* Bound the drawing to the rectangle supplied */
+		if(level_map[i] <= rec.bottom)
+		{
+			uint16_t top = (rec.top > level_map[i]) ? rec.top : level_map[i];
+                	rectangle ground = {i, i, top, rec.bottom};
+                	fill_rectangle(ground, colour);
+		}
+        }
 }
 
 void clear_screen()

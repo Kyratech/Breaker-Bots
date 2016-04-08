@@ -127,3 +127,51 @@ int16_t ml_cos(uint16_t x)
 {
 	return ml_sin(x + 90);
 }
+
+/* Find the rounded integer value of the SQRT of a number (no sqrt hardware needed) */
+uint16_t ml_sqrt(uint16_t n)
+{
+	uint16_t input = n;
+	uint16_t result = 0;
+	uint16_t one = 1u << 14;
+
+	while(one > input)
+	{
+		one >>= 2;
+	}
+
+	while(one != 0)
+	{
+		if(input >= result + one)
+		{
+			input = input - (result + one);
+			result = result + 2 * one;
+		}
+		result >>= 1;
+		one >>= 2;
+	}
+
+	if(input > result)
+	{
+		result++;
+	}
+
+	return result;
+}
+
+/* Take a guess what these two functions do...*/
+uint16_t ml_max(uint16_t a, uint16_t b)
+{
+	if(a > b)
+		return a;
+	else
+		return b;
+}
+
+uint16_t ml_min(uint16_t a, uint16_t b)
+{
+	if(a > b)
+		return b;
+	else
+		return a;
+}

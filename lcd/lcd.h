@@ -46,6 +46,7 @@ void fill_rectangle(rectangle r, uint16_t col);
 void fill_rectangle_indexed(rectangle r, uint16_t* col);
 void fill_sprite(sprite* spr, uint16_t posX, uint16_t posY);
 void draw_level(uint8_t* level_map, uint16_t colour, uint16_t width, uint16_t height);
+void draw_background(uint8_t* level_map, uint16_t colour, rectangle rec);
 void display_char(char c);
 void display_string(char *str);
 void display_string_xy(char *str, uint16_t x, uint16_t y);

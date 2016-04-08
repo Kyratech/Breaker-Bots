@@ -8,13 +8,18 @@
 #include <stdlib.h>
 
 #define HEIGHT 240
-#define WIDTH 360
+#define WIDTH 320
 #define HEIGHT_NO_UI 225
-#define PLAYER_WIDTH 4
-#define PLAYER_HEIGHT 8
+#define PLAYER_WIDTH 4		//Actually width / 2 to save division later
+#define PLAYER_HEIGHT 8		//Ditto, is height / 2
 
-#define RETICULE_DISTANCE 3
+#define MAX_PLAYER_HP 200
+#define RETICULE_DISTANCE 3	//Distance from player centre
 #define MAX_PROJECTILE_POWER 20
+#define EXPLOSION_RADIUS 20
+#define MAX_CLIMB_HEIGHT 20	//Max pixels the player can climb
+
+uint8_t *level_map;
 
 int blink(int);
 int run_game();
@@ -30,6 +35,7 @@ int blueX, blueY;
 int reticuleX, reticuleY;
 
 int direction;
+int player_VelY;
 int projectileX, projectileY;
 int proVelX, proVelY;
 int launch_speed;
@@ -49,7 +55,7 @@ void start_game()
 	reticule_SPR = reticule(0);
 
 	/* Generate and draw a level */
-	uint8_t *level_map = generate_flat(WIDTH, 120);	
+	level_map = generate_flat(WIDTH, 129);	
 	if(level_map != NULL)
 		draw_level(level_map, SILVER, 0, WIDTH - 1);
 	
@@ -61,6 +67,7 @@ void start_game()
 
 	/* Initialise movement variables */
 	direction = 0;
+	player_VelY = 0;
 	launch_speed = 0;
 
 	/* Draw the UI */
@@ -168,8 +175,9 @@ int run_game()
 		int newRY = (blueY + (RETICULE_DISTANCE * ml_sin(position))/100) - reticule_SPR->height/2;
 
 		rectangle reticuleOld = {reticuleX, reticuleX + reticule_SPR->width - 1, reticuleY, reticuleY + reticule_SPR->height -1};
-		
-		fill_rectangle(reticuleOld, BLACK);
+		draw_background(level_map, SILVER, reticuleOld);
+
+		//fill_rectangle(reticuleOld, BLACK);
 		fill_sprite(reticule_SPR, newRX, newRY);
 	
 		reticuleX = newRX;
@@ -192,10 +200,14 @@ int run_game()
 
 		/* Move the player */
 		int newX = blueX + direction;
-		int newY = blueY;
+		int newY = ml_min(level_map[newX - PLAYER_WIDTH], level_map[newX + PLAYER_WIDTH - 1]) - PLAYER_HEIGHT;
+
+		/* Cancel movement if trying to climb to high */
+		if(blueY - newY > MAX_CLIMB_HEIGHT)
+			return 0;
 		
-		rectangle playerOld = {blueX - PLAYER_WIDTH, blueX + PLAYER_WIDTH, blueY - PLAYER_HEIGHT, blueY + PLAYER_HEIGHT};
-		rectangle playerNew = {newX - PLAYER_WIDTH, newX + PLAYER_WIDTH, newY - PLAYER_HEIGHT, newY + PLAYER_HEIGHT};
+		rectangle playerOld = {blueX - PLAYER_WIDTH, blueX + PLAYER_WIDTH - 1, blueY - PLAYER_HEIGHT, blueY + PLAYER_HEIGHT - 1};
+		rectangle playerNew = {newX - PLAYER_WIDTH, newX + PLAYER_WIDTH - 1, newY - PLAYER_HEIGHT, newY + PLAYER_HEIGHT - 1};
 
 		fill_rectangle(playerOld, BLACK);
 		fill_rectangle(playerNew, BLUE);
@@ -209,20 +221,46 @@ int run_game()
 		/* Find the new position of the projectile */
 		int newX = projectileX + proVelX/1000;
 		int newY = projectileY + proVelY/1000;
-
-		rectangle projectileOld = {projectileX, projectileX, projectileY, projectileY};
-		rectangle projectileNew = {newX, newX, newY, newY};
-
-		fill_rectangle(projectileOld, BLACK);
 		
+		rectangle projectileOld = {projectileX, projectileX, projectileY, projectileY};
+		fill_rectangle(projectileOld, BLACK);
+
 		/* End turn if projectile goes off sides or bottom of level */
 		if(newX < 0 || newX > WIDTH || newY > HEIGHT_NO_UI)
 		{
 			start_turn();
 			return 0;
 		}
+		
+		/* If the new position is in the ground, EXPLODE! */
+		if(newY >= level_map[newX])
+		{
+			int i;
+			for(i = -EXPLOSION_RADIUS; i <= EXPLOSION_RADIUS; i++)
+			{
+				/* Make sure that terrain is on screen */
+				if(newX + i >= 0 && newX + i < WIDTH)
+				{
+					uint16_t new_ground_level = newY + ml_sqrt(EXPLOSION_RADIUS * EXPLOSION_RADIUS - i * i);
+					if(new_ground_level >= HEIGHT_NO_UI)
+						level_map[newX + i] = HEIGHT_NO_UI - 1; //Clamp to bottom of level
+					else if(new_ground_level > level_map[newX + i]) //Don't raise the ground level!
+						level_map[newX + i] = new_ground_level; 
+				}
+			}
+
+			draw_level(level_map, SILVER, newX - EXPLOSION_RADIUS, newX + EXPLOSION_RADIUS);
+			rectangle player = {blueX - PLAYER_WIDTH, blueX + PLAYER_WIDTH - 1, blueY - PLAYER_HEIGHT, blueY + PLAYER_HEIGHT - 1};
+			fill_rectangle(player, BLUE);
+
+			start_turn();
+			return 0;
+		}	
+
+		rectangle projectileNew = {newX, newX, newY, newY};
+		
 		/* Continue turn if off top of level, but only draw if projectile onscreen */
-		else if(newY >= 0)
+		if(newY >= 0)
 		{
 			fill_rectangle(projectileNew, RED);
 		}
