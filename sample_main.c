@@ -208,7 +208,10 @@ int run_game()
 		rectangle playerNew = {newX - PLAYER_WIDTH, newX + PLAYER_WIDTH - 1, newY - PLAYER_HEIGHT, newY + PLAYER_HEIGHT - 1};
 
 		fill_rectangle(playerOld, BLACK);
-		fill_rectangle(playerNew, BLUE);
+		sprite *spr = botleft(0);
+		fill_sprite(spr, newX, newY);
+		free_sprite(spr);
+		//fill_rectangle(playerNew, BLUE);
 		
 		blueX = newX;
 		blueY = newY;
