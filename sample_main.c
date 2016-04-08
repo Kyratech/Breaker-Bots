@@ -169,10 +169,10 @@ int run_game()
 	if(game_state == 1)
 	{
 		/* Move the reticule based on readings from the rotary encoder */
-		int newRX = (blueX + (RETICULE_DISTANCE * ml_cos(position))/100) - reticule_SPR->width/2;
-		int newRY = (blueY + (RETICULE_DISTANCE * ml_sin(position))/100) - reticule_SPR->height/2;
+		int newRX = (blueX + (RETICULE_DISTANCE * ml_cos(position))/100);
+		int newRY = (blueY + (RETICULE_DISTANCE * ml_sin(position))/100);
 
-		rectangle reticuleOld = {reticuleX, reticuleX + reticule_SPR->width - 1, reticuleY, reticuleY + reticule_SPR->height -1};
+		rectangle reticuleOld = {reticuleX - reticule_SPR->width / 2, reticuleX + reticule_SPR->width / 2 - 1, reticuleY - reticule_SPR->height / 2, reticuleY + reticule_SPR->height / 2 - 1};
 		draw_background(level_map, SILVER, reticuleOld);
 
 		//fill_rectangle(reticuleOld, BLACK);

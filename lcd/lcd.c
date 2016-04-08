@@ -202,6 +202,8 @@ void draw_pixel(uint16_t x, uint16_t y, uint16_t colour)
 void fill_sprite(sprite* spr, uint16_t posX, uint16_t posY)
 {
     uint16_t i,j;
+    uint16_t pivX = posX - spr->width / 2;
+    uint16_t pivY = posY - spr->height / 2;
 
     for(i = 0; i < spr->height; i++)
     {
@@ -210,7 +212,7 @@ void fill_sprite(sprite* spr, uint16_t posX, uint16_t posY)
 		uint16_t col = spr->pixels[i * spr->width + j];
 		if(col != spr->trans_colour)
 		{
-        		draw_pixel(posX + j, posY + i, col);
+        		draw_pixel(pivX + j, pivY + i, col);
 		}
 	}
     }

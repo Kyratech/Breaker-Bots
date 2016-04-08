@@ -14,5 +14,6 @@ typedef struct
 } sprite;
 
 sprite *reticule(uint8_t team);
+sprite *botleft(uint8_t team);
 
 #endif
