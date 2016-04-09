@@ -169,9 +169,9 @@ sprite *botright(uint8_t team)
 			light = LIGHT_GOLDENROD;
 			break;
 		case 3:
-			dark = FOREST_GREEN;
-			med = LIME_GREEN;
-			light = GREEN_YELLOW;
+			dark = DARK_GREEN;
+			med = FOREST_GREEN;
+			light = GREEN;
 			break;
 		default:
 			dark = DIM_GRAY;
