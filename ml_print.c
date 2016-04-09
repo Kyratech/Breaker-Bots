@@ -2,6 +2,8 @@
 #include "ml_print.h"
 #include "lcd.h"
 
+void ml_printf_impl(char *str, va_list ap);
+
 static char buf[12];
 
 void ml_printNatural(uint16_t num, uint16_t base)
@@ -50,6 +52,21 @@ void ml_printf(char *str, ...)
 {
 	va_list ap;
 	va_start(ap,str);
+	ml_printf_impl(str, ap);
+	va_end(ap);
+}
+
+void ml_printf_at(char *str, uint16_t x, uint16_t y, ...)
+{
+	set_lcd_position(x, y);
+	va_list ap;
+	va_start(ap,y);
+	ml_printf_impl(str, ap);
+	va_end(ap);
+}
+
+void ml_printf_impl(char *str, va_list ap)
+{
 	char c;
 	while((c = *(str++)))
 	{
@@ -107,3 +124,5 @@ void ml_printf(char *str, ...)
 	}
 	display_char('\n');
 }
+
+

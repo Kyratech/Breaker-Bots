@@ -37,6 +37,7 @@ typedef struct {
 	uint16_t top, bottom;
 } rectangle;	
 
+void set_lcd_position(uint16_t x, uint16_t y);
 void init_lcd();
 void lcd_brightness(uint8_t i);
 void set_orientation(orientation o);

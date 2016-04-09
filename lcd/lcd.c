@@ -267,6 +267,13 @@ void clear_screen()
     fill_rectangle(r, display.background);
 }
 
+/* Set the position to write next at, without writing yet */
+void set_lcd_position(uint16_t x, uint16_t y)
+{
+	display.x = x;
+    	display.y = y;
+}
+
 void display_char(char c)
 {
     uint16_t x, y;
