@@ -101,6 +101,11 @@ void start_game()
 
 void start_turn()
 {
+	/* Rotate through the players */
+	current_player = (current_player + 1) % players;
+	free_sprite(reticule_SPR);
+	reticule_SPR = reticule(current_player);
+
 	/* Change to movement phase */
 	game_state = 1;
 	
