@@ -21,12 +21,12 @@
 
 uint8_t *level_map;
 
-int blink(int);
 int run_game();
 int update_dial(int);
 int collect_delta(int);
 int check_switches(int);
 void start_turn();
+void draw_HP_UI();
 
 sprite *reticule_SPR;
 sprite *player_SPR;
@@ -82,8 +82,6 @@ void start_game()
 		free_sprite(player_SPR);
 		player_SPR = botleft(i);
 		fill_sprite(player_SPR, playersX[i], playersY[i]);
-
-		ml_printf_at("%u", playersX[i] - 20, playersY[i] - 20, players_HP[i]);		
 	}
 	current_player = 0;
 	reticuleX = (playersX[current_player] + (RETICULE_DISTANCE * ml_cos(position))/100);
@@ -116,6 +114,9 @@ void start_turn()
 
 	/* Change to movement phase */
 	game_state = 1;
+
+	/* Update the HP UI */
+	draw_HP_UI();
 	
 	/* Reset the power bar */
 	launch_speed = 0;
@@ -152,6 +153,27 @@ void start_turn()
 	fill_rectangle(*wind_bar, wind_colour);
 
 	free(wind_bar);
+}
+
+void draw_HP_UI()
+{
+	rectangle UI_rec = {0, WIDTH, 0, 15};
+	fill_rectangle(UI_rec, BLACK);
+
+	display_color(BLUE, BLACK);
+	ml_printf_at("BLUE: %u", 5, 5, players_HP[0]);
+	display_color(RED, BLACK);
+	ml_printf_at("RED: %u", 85, 5, players_HP[1]);
+	if(players >= 3)
+	{
+		display_color(YELLOW, BLACK);
+	        ml_printf_at("YELLOW: %u", 165, 5, players_HP[1]);
+		if(players == 4)
+		{
+			display_color(GREEN, BLACK);
+		        ml_printf_at("GREEN: %u", 245, 5, players_HP[1]);
+		}
+	}
 }
 
 void main(void) {
@@ -388,50 +410,4 @@ int check_switches(int state) {
 
 	return state;	
 }
-
-
-
-/*
-int blink(int state) {
-	static int light = 0;
-	uint8_t level;
-	
-	if (light < -120) {
-		state = 1;
-	} else if (light > 254) {
-		state = -20;
-	}
-
-
-	Compensate somewhat for nonlinear LED 
-	output and eye sensitivity:
-    
-	if (state > 0) {
-		if (light > 40) {
-			state = 2;
-		}
-		if (light > 100) {
-			state = 5;
-		}
-	} else {
-		if (light < 180) {
-			state = -10;
-		}
-		if (light < 30) {
-			state = -5;
-		}
-	}
-	light += state;
-
-	if (light < 0) {
-		level = 0;
-	} else if (light > 255) {
-		level = 255;
-	} else {
-		level = light;
-	}
-	
-	os_led_brightness(level);
-	return state;
-}*/
 

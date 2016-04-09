@@ -344,3 +344,9 @@ void display_register(uint8_t reg)
 	}
 }
 
+void display_color(uint16_t fg, uint16_t bg)
+{
+        display.foreground = fg;
+        display.background = bg;
+}
+
