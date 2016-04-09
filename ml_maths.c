@@ -175,3 +175,14 @@ uint16_t ml_min(uint16_t a, uint16_t b)
 	else
 		return a;
 }
+
+/* Limit a value to a range */
+int16_t ml_clamp(int16_t low, int16_t high, int16_t value)
+{
+	if(value < low)
+		return low;
+	else if(value > high)
+		return high;
+	else
+		return value;
+}

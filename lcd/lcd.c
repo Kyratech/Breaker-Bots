@@ -12,6 +12,7 @@
 #include "font.h"
 #include "ili934x.h"
 #include "lcd.h"
+#include "../ml_maths.h"
 
 lcd display;
 
@@ -219,37 +220,40 @@ void fill_sprite(sprite* spr, uint16_t posX, uint16_t posY)
 }
 
 /* Draw some columns of the background from 'start' to 'end' */
-void draw_level(uint8_t* level_map, uint16_t colour, uint16_t start, uint16_t end)
+void draw_level(uint8_t* level_map, uint16_t colour, int16_t start, int16_t end)
 {
-	rectangle blank_out = {start, end, 0, 225};
-	fill_rectangle(blank_out, BLACK);
-
-	/* Clamp to screen dimensions; exit if the area would start after the end. */
-	if(start > LCDHEIGHT)
-		return;
-	uint16_t high = (end > LCDHEIGHT) ? LCDHEIGHT : end;
-
-	unsigned i;
-	for(i = start; i <= high; i++)
+	if(start <= end)
 	{
-		rectangle ground = {i, i, level_map[i], 225};
-		fill_rectangle(ground, colour);
+		/* Clamp to screen dimensions. */
+		int16_t low = ml_clamp(0, LCDHEIGHT - 1,start);
+		int16_t high = ml_clamp(0, LCDHEIGHT - 1, end);
+	
+		rectangle blank_out = {low, high, 0, 225};
+		fill_rectangle(blank_out, BLACK);
+	
+		int16_t i;
+		for(i = low; i <= high; i++)
+		{
+			rectangle ground = {i, i, level_map[i], 225};
+			fill_rectangle(ground, colour);
+		}
 	}
 }
 
 /* Fill a rectangle with the colours that match the level geometry */
 void draw_background(uint8_t* level_map, uint16_t colour, rectangle rec)
 {
-	fill_rectangle(rec, BLACK);
+	rectangle rec_clamped = {ml_clamp(0, LCDHEIGHT - 1, rec.left), ml_clamp(0, LCDHEIGHT - 1, rec.right), ml_clamp(0, LCDWIDTH - 1, rec.top), ml_clamp(0, LCDWIDTH - 1, rec.bottom)};
+	fill_rectangle(rec_clamped, BLACK);
 
 	unsigned i;
-        for(i = rec.left; i <= rec.right; i++)
+        for(i = rec_clamped.left; i <= rec_clamped.right; i++)
         {
 		/* Bound the drawing to the rectangle supplied */
-		if(level_map[i] <= rec.bottom)
+		if(level_map[i] <= rec_clamped.bottom)
 		{
-			uint16_t top = (rec.top > level_map[i]) ? rec.top : level_map[i];
-                	rectangle ground = {i, i, top, rec.bottom};
+			uint16_t top = (rec_clamped.top > level_map[i]) ? rec_clamped.top : level_map[i];
+                	rectangle ground = {i, i, top, rec_clamped.bottom};
                 	fill_rectangle(ground, colour);
 		}
         }

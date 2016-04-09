@@ -1,5 +1,5 @@
 _build/lcd.o: lcd/lcd.c lcd/font.h lcd/ili934x.h lcd/lcd.h \
- lcd/ml_sprites.h lcd/svgrgb565.h
+ lcd/ml_sprites.h lcd/svgrgb565.h lcd/../ml_maths.h
 
 lcd/font.h:
 
@@ -10,3 +10,5 @@ lcd/lcd.h:
 lcd/ml_sprites.h:
 
 lcd/svgrgb565.h:
+
+lcd/../ml_maths.h:

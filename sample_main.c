@@ -29,12 +29,16 @@ int check_switches(int);
 void start_turn();
 
 sprite *reticule_SPR;
+sprite *player_SPR;
 
-int game_state;				
-int blueX, blueY;
-int reticuleX, reticuleY;
+uint8_t current_player;
+uint8_t players = 4;
+uint8_t game_state;				
+volatile int16_t *playersX;
+volatile int16_t *playersY;
+int16_t reticuleX, reticuleY;
 
-int direction;
+int8_t direction;
 int projectileX, projectileY;
 int proVelX, proVelY;
 int launch_speed;
@@ -59,10 +63,25 @@ void start_game()
 		draw_level(level_map, SILVER, 0, WIDTH - 1);
 	
 	/* Set up the players in the field */
-	blueX = 180;
-	blueY = 120;
-	reticuleX = (blueX + (RETICULE_DISTANCE * ml_cos(position))/100) - reticule_SPR->width/2;
-	reticuleY = (blueY + (RETICULE_DISTANCE * ml_sin(position))/100) - reticule_SPR->height/2;
+	playersX = malloc(players * sizeof(uint16_t));
+	playersY = malloc(players * sizeof(uint16_t));
+	if(playersX == NULL || playersY == NULL)
+	{
+		display_string("Out of memory error!");
+		return;
+	}
+	uint8_t i;
+	for(i = 0; i < players; i++)
+	{
+		playersX[i] = (i + 1) * WIDTH / (players + 1);
+		playersY[i] = 120;
+		free_sprite(player_SPR);
+		player_SPR = botleft(i);
+		fill_sprite(player_SPR, playersX[i], playersY[i]);
+	}
+	current_player = 0;
+	reticuleX = (playersX[current_player] + (RETICULE_DISTANCE * ml_cos(position))/100);
+	reticuleY = (playersY[current_player] + (RETICULE_DISTANCE * ml_sin(position))/100);
 
 	/* Initialise movement variables */
 	direction = 0;
@@ -151,8 +170,8 @@ void fire_projectile()
 {
 	game_state = 2;
 	
-	projectileX = blueX;
-	projectileY = blueY;
+	projectileX = playersX[current_player];
+	projectileY = playersY[current_player];
 
 	int corrected_launch_speed = launch_speed * MAX_PROJECTILE_POWER / 100;
 
@@ -169,14 +188,15 @@ int run_game()
 	if(game_state == 1)
 	{
 		/* Move the reticule based on readings from the rotary encoder */
-		int newRX = (blueX + (RETICULE_DISTANCE * ml_cos(position))/100);
-		int newRY = (blueY + (RETICULE_DISTANCE * ml_sin(position))/100);
-
+		int16_t newRX = (playersX[current_player] + (RETICULE_DISTANCE * ml_cos(position))/100);
+		int16_t newRY = (playersY[current_player] + (RETICULE_DISTANCE * ml_sin(position))/100);
+		
 		rectangle reticuleOld = {reticuleX - reticule_SPR->width / 2, reticuleX + reticule_SPR->width / 2 - 1, reticuleY - reticule_SPR->height / 2, reticuleY + reticule_SPR->height / 2 - 1};
 		draw_background(level_map, SILVER, reticuleOld);
 
 		//fill_rectangle(reticuleOld, BLACK);
-		fill_sprite(reticule_SPR, newRX, newRY);
+		if(newRX >= 0 && newRX < WIDTH && newRY >= 0 && newRY < HEIGHT)
+			fill_sprite(reticule_SPR, newRX, newRY);
 	
 		reticuleX = newRX;
 		reticuleY = newRY;
@@ -185,10 +205,14 @@ int run_game()
 		if (get_switch_rpt(_BV(SWE))) 
 		{
 			direction = 4;
+			free_sprite(player_SPR);
+			player_SPR = botright(current_player);
 		}
 		else if (get_switch_rpt(_BV(SWW)))
 		{
 			direction = -4;
+			free_sprite(player_SPR);
+			player_SPR = botleft(current_player);
 		}
 		else
 		{
@@ -197,24 +221,37 @@ int run_game()
 		}
 
 		/* Move the player */
-		int newX = blueX + direction;
-		int newY = ml_min(level_map[newX - PLAYER_WIDTH], level_map[newX + PLAYER_WIDTH - 1]) - PLAYER_HEIGHT;
+		int16_t newX = playersX[current_player] + direction;
+		int16_t newY = ml_min(level_map[newX - PLAYER_WIDTH], level_map[newX + PLAYER_WIDTH - 1]) - PLAYER_HEIGHT;
 
-		/* Cancel movement if trying to climb to high */
-		if(blueY - newY > MAX_CLIMB_HEIGHT)
+		int8_t i;
+		int8_t player_collision = 0;
+		for(i = 0; i < players; i++)
+		{
+			if(i != current_player && newX >= playersX[i] - PLAYER_WIDTH && newX <= playersX[i] + PLAYER_WIDTH - 1)
+			{
+				player_collision = 1;
+				break;
+			}				
+		}
+
+		/* Cancel movement if trying to climb to high or off the sides of the screen */
+		if(player_collision || playersY[current_player] - newY > MAX_CLIMB_HEIGHT || newX <= PLAYER_WIDTH || newX + PLAYER_WIDTH > WIDTH)
+		{
+			//display_string_xy("Error\n", 10, 10);
+			//ml_printf("Cannot move there... (%u,%u) to (%u,%u)", playersX[0], playersY[0], newX, newY);
 			return 0;
+		}
 		
-		rectangle playerOld = {blueX - PLAYER_WIDTH, blueX + PLAYER_WIDTH - 1, blueY - PLAYER_HEIGHT, blueY + PLAYER_HEIGHT - 1};
-		rectangle playerNew = {newX - PLAYER_WIDTH, newX + PLAYER_WIDTH - 1, newY - PLAYER_HEIGHT, newY + PLAYER_HEIGHT - 1};
+		rectangle playerOld = {playersX[current_player] - PLAYER_WIDTH, playersX[current_player] + PLAYER_WIDTH - 1, playersY[current_player] - PLAYER_HEIGHT, playersY[current_player] + PLAYER_HEIGHT - 1};
+		//rectangle playerNew = {newX - PLAYER_WIDTH, newX + PLAYER_WIDTH - 1, newY - PLAYER_HEIGHT, newY + PLAYER_HEIGHT - 1};
 
 		fill_rectangle(playerOld, BLACK);
-		sprite *spr = botleft(0);
-		fill_sprite(spr, newX, newY);
-		free_sprite(spr);
+		fill_sprite(player_SPR, newX, newY);
 		//fill_rectangle(playerNew, BLUE);
 		
-		blueX = newX;
-		blueY = newY;
+		playersX[current_player] = newX;
+		playersY[current_player] = newY;
 	}
 	/* Projectile phase (missile in the air) */
 	else if(game_state == 2)
@@ -251,8 +288,9 @@ int run_game()
 			}
 
 			draw_level(level_map, SILVER, newX - EXPLOSION_RADIUS, newX + EXPLOSION_RADIUS);
-			rectangle player = {blueX - PLAYER_WIDTH, blueX + PLAYER_WIDTH - 1, blueY - PLAYER_HEIGHT, blueY + PLAYER_HEIGHT - 1};
-			fill_rectangle(player, BLUE);
+			//rectangle player = {blueX - PLAYER_WIDTH, blueX + PLAYER_WIDTH - 1, blueY - PLAYER_HEIGHT, blueY + PLAYER_HEIGHT - 1};
+			//fill_rectangle(player, BLUE);
+			fill_sprite(player_SPR, playersX[0], playersY[0]);
 
 			start_turn();
 			return 0;
