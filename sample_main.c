@@ -109,8 +109,57 @@ void start_game()
 
 void start_turn()
 {
+	/* If only one player remains, declare them winner. */
+	uint8_t i;
+	uint8_t player_left; //Record last player left (meaningless if more than 1 survivor)
+	uint8_t players_alive = 0;
+	for(i = 0; i < players; i++)
+	{
+		if(players_HP[i] != 0)
+		{
+			players_alive++;
+			player_left = i;
+		}
+	}
+	if(players_alive == 1)
+	{
+		switch(player_left)
+		{
+			case 0:
+				display_color(BLUE, BLACK);
+				ml_printf_at("To the victor, the spoils! BLUE WINS!", 5, 20);
+				break;
+			case 1:
+				display_color(RED, BLACK);
+				ml_printf_at("And the win goes to RED! Congratulations!", 5, 20);
+				break;
+			case 2:
+				display_color(YELLOW, BLACK);
+				ml_printf_at("Who's the best? YELLOW's the best!", 5, 20);
+				break;
+			default:
+				display_color(GREEN, BLACK);
+				ml_printf_at("Looks like the others are GREEN with envy! (GREEN WINS)", 5, 20);
+				break;
+		}
+
+		game_state = 4;
+	}
+	else if(players_alive == 0)
+	{
+		display_color(WHITE, BLACK);
+		ml_printf_at("Oh dear, it looks like a DRAW!", 5, 20);
+
+		game_state = 4;
+	}
+
 	/* Rotate through the players */
 	current_player = (current_player + 1) % players;
+	while(players_HP[current_player] == 0)
+	{
+		current_player = (current_player + 1) % players;
+	}
+
 	free_sprite(reticule_SPR);
 	reticule_SPR = reticule(current_player);
 
@@ -265,7 +314,7 @@ int run_game()
 		int8_t player_collision = 0;
 		for(i = 0; i < players; i++)
 		{
-			if(i != current_player && newX >= playersX[i] - PLAYER_WIDTH && newX <= playersX[i] + PLAYER_WIDTH - 1)
+			if(players_HP[i] != 0 && i != current_player && newX >= playersX[i] - PLAYER_WIDTH && newX <= playersX[i] + PLAYER_WIDTH - 1)
 			{
 				player_collision = 1;
 				break;
@@ -340,12 +389,17 @@ int run_game()
 					players_HP[i] -= damage;
 				}
 
-				free_sprite(player_SPR);
 				rectangle playerOld = {playersX[i] - PLAYER_WIDTH, playersX[i] + PLAYER_WIDTH - 1, playersY[i] - PLAYER_HEIGHT, playersY[i] + PLAYER_HEIGHT - 1};
 				fill_rectangle(playerOld, BLACK);
-				player_SPR = botleft(i);
-				playersY[i] = ml_min(level_map[playersX[i] - PLAYER_WIDTH], level_map[playersX[i] + PLAYER_WIDTH - 1]) - PLAYER_HEIGHT;
-				fill_sprite(player_SPR, playersX[i], playersY[i]);
+
+				/* If the player is still alive, redraw them */
+				if(players_HP[i] != 0)
+				{
+					free_sprite(player_SPR);
+					player_SPR = botleft(i);
+					playersY[i] = ml_min(level_map[playersX[i] - PLAYER_WIDTH], level_map[playersX[i] + PLAYER_WIDTH - 1]) - PLAYER_HEIGHT;
+					fill_sprite(player_SPR, playersX[i], playersY[i]);
+				}
 			}
 
 			start_turn();
