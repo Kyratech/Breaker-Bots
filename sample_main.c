@@ -340,6 +340,8 @@ int run_game()
 				}
 
 				free_sprite(player_SPR);
+				rectangle playerOld = {playersX[i] - PLAYER_WIDTH, playersX[i] + PLAYER_WIDTH - 1, playersY[i] - PLAYER_HEIGHT, playersY[i] + PLAYER_HEIGHT - 1};
+				fill_rectangle(playerOld, BLACK);
 				player_SPR = botleft(i);
 				playersY[i] = ml_min(level_map[playersX[i] - PLAYER_WIDTH], level_map[playersX[i] + PLAYER_WIDTH - 1]) - PLAYER_HEIGHT;
 				fill_sprite(player_SPR, playersX[i], playersY[i]);
