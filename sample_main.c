@@ -16,7 +16,9 @@
 #define MAX_PLAYER_HP 200
 #define RETICULE_DISTANCE 3	//Distance from player centre
 #define MAX_PROJECTILE_POWER 20
-#define EXPLOSION_RADIUS 20
+#define EXPLOSION_RADIUS 20	//Size of crater
+#define BLAST_RADIUS 30		//Area of effect (in which players lose HP)
+#define MAX_EXPLOSION_DAMAGE 50
 #define MAX_CLIMB_HEIGHT 20	//Max pixels the player can climb
 
 uint8_t *level_map;
@@ -167,11 +169,11 @@ void draw_HP_UI()
 	if(players >= 3)
 	{
 		display_color(YELLOW, BLACK);
-	        ml_printf_at("YELLOW: %u", 165, 5, players_HP[1]);
+	        ml_printf_at("YELLOW: %u", 165, 5, players_HP[2]);
 		if(players == 4)
 		{
 			display_color(GREEN, BLACK);
-		        ml_printf_at("GREEN: %u", 245, 5, players_HP[1]);
+		        ml_printf_at("GREEN: %u", 245, 5, players_HP[3]);
 		}
 	}
 }
@@ -292,8 +294,8 @@ int run_game()
 	else if(game_state == 2)
 	{
 		/* Find the new position of the projectile */
-		int newX = projectileX + proVelX/1000;
-		int newY = projectileY + proVelY/1000;
+		int16_t newX = projectileX + proVelX/1000;
+		int16_t newY = projectileY + proVelY/1000;
 		
 		rectangle projectileOld = {projectileX, projectileX, projectileY, projectileY};
 		fill_rectangle(projectileOld, BLACK);
@@ -325,7 +327,23 @@ int run_game()
 			draw_level(level_map, SILVER, newX - EXPLOSION_RADIUS, newX + EXPLOSION_RADIUS);
 			//rectangle player = {blueX - PLAYER_WIDTH, blueX + PLAYER_WIDTH - 1, blueY - PLAYER_HEIGHT, blueY + PLAYER_HEIGHT - 1};
 			//fill_rectangle(player, BLUE);
-			fill_sprite(player_SPR, playersX[0], playersY[0]);
+
+			/* Check players for damage + redraw them */
+			for(i = 0; i < players; i++)
+			{
+				int16_t deltaX = playersX[i] - newX;
+				int16_t deltaY = playersY[i] - newY;
+				int16_t distance = ml_sqrt(deltaX * deltaX + deltaY * deltaY);
+				if(distance < BLAST_RADIUS)
+				{
+					players_HP[i] -= MAX_EXPLOSION_DAMAGE - (distance * MAX_EXPLOSION_DAMAGE / BLAST_RADIUS);
+				}
+
+				free_sprite(player_SPR);
+				player_SPR = botleft(i);
+				playersY[i] = ml_min(level_map[playersX[i] - PLAYER_WIDTH], level_map[playersX[i] + PLAYER_WIDTH - 1]) - PLAYER_HEIGHT;
+				fill_sprite(player_SPR, playersX[i], playersY[i]);
+			}
 
 			start_turn();
 			return 0;
