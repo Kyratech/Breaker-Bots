@@ -336,7 +336,8 @@ int run_game()
 				int16_t distance = ml_sqrt(deltaX * deltaX + deltaY * deltaY);
 				if(distance < BLAST_RADIUS)
 				{
-					players_HP[i] -= MAX_EXPLOSION_DAMAGE - (distance * MAX_EXPLOSION_DAMAGE / BLAST_RADIUS);
+					int16_t damage = ml_clamp(0, players_HP[i], MAX_EXPLOSION_DAMAGE - (distance * MAX_EXPLOSION_DAMAGE / BLAST_RADIUS));
+					players_HP[i] -= damage;
 				}
 
 				free_sprite(player_SPR);
