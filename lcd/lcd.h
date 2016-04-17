@@ -2,6 +2,9 @@
  * Licence: This work is licensed under the Creative Commons Attribution License.
  *           View this license at http://creativecommons.org/about/licenses/
  */
+
+#ifndef LCD_H
+#define LCD_H
  
 #include <avr/io.h>
 #include <stdint.h>
@@ -53,3 +56,5 @@ void display_string(char *str);
 void display_string_xy(char *str, uint16_t x, uint16_t y);
 void display_register(uint8_t reg);
 void display_color(uint16_t fg, uint16_t bg);
+
+#endif

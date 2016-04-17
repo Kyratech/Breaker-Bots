@@ -5,6 +5,7 @@
 #include "ml_maths.h"
 #include "ballistics_UI.h"
 #include "ballistics_levelgen.h"
+#include "ballistics_titlescreen.h"
 #include <stdlib.h>
 
 #define HEIGHT 240
@@ -34,7 +35,7 @@ sprite *reticule_SPR;
 sprite *player_SPR;
 
 uint8_t current_player;
-uint8_t players = 4;
+uint8_t players = 2;
 uint8_t game_state;				
 volatile int16_t *playersX;
 volatile int16_t *playersY;
@@ -52,6 +53,28 @@ FIL File;  						/* FAT File */
 
 int position = 0;
 
+void start_menu()
+{
+	game_state = 4;
+
+	clear_screen();	
+	draw_titlescreen(&FatFs);
+	display_color(WHITE, BLACK);
+    	ml_printf_at("CENTRE to start", 5, 105);
+    	ml_printf_at("< %u Players >", 5, 115, players);
+}
+
+void end_game()
+{
+	game_state = 5;
+
+	free((void*)playersX);
+	free((void*)playersY);
+	free((void*)players_HP);
+	
+	ml_printf_at("CENTRE to end game", 120, 120);
+}
+
 void start_game()
 {
 	/* Seed the RNG */
@@ -61,6 +84,7 @@ void start_game()
 	reticule_SPR = reticule(0);
 
 	/* Generate and draw a level */
+	clear_screen();
 	level_map = generate_flat(WIDTH, 129);	
 	if(level_map != NULL)
 		draw_level(level_map, SILVER, 0, WIDTH - 1);
@@ -143,14 +167,16 @@ void start_turn()
 				break;
 		}
 
-		game_state = 4;
+		end_game();
+		return;
 	}
 	else if(players_alive == 0)
 	{
 		display_color(WHITE, BLACK);
 		ml_printf_at("Oh dear, it looks like a DRAW!", 5, 20);
 
-		game_state = 4;
+		end_game();
+		return;
 	}
 
 	/* Rotate through the players */
@@ -234,7 +260,9 @@ void main(void) {
     os_add_task( collect_delta,   60, 1);
     os_add_task( check_switches,  60, 1);
      
-    start_game();
+    //start_game();
+
+    start_menu();
 
     sei();
     for(;;){}
@@ -439,6 +467,39 @@ int run_game()
 			fire_projectile();
 		}
 	}	
+	/* Menu phase */
+	else if(game_state == 4)
+	{
+		if (get_switch_press(_BV(SWE)))
+		{
+			if(players == 4)
+				players = 2;
+			else
+				players++;
+		}
+		else if (get_switch_press(_BV(SWE)))
+		{
+			if(players == 2)
+				players = 4;
+			else
+				players--;
+		}
+
+		ml_printf_at("< %u Players >", 5, 115, players);
+		
+		if (get_switch_long(_BV(SWC)))
+		{
+			start_game();
+		}
+	}
+	/* End game phase */
+	else if(game_state == 5)
+	{
+		if (get_switch_long(_BV(SWC)))
+		{
+			start_menu();
+		}
+	}
 
 	sei();
 	
