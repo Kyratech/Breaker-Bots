@@ -8,6 +8,8 @@
 #include "ballistics_titlescreen.h"
 #include <stdlib.h>
 
+#define VERSION "v1.0.0"
+
 #define HEIGHT 240
 #define WIDTH 320
 #define HEIGHT_NO_UI 225
@@ -59,6 +61,8 @@ void start_menu()
 
 	clear_screen();	
 	draw_titlescreen(&FatFs);
+	display_color(CRIMSON, BLACK);
+	ml_printf_at("%s", 135, 85, VERSION);
 	display_color(WHITE, BLACK);
     	ml_printf_at("CENTRE to start", 5, 105);
     	ml_printf_at("< %u Players >", 5, 115, players);

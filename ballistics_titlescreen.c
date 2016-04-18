@@ -43,7 +43,7 @@ void draw_titlescreen(FATFS *FatFs)
         }
 	else
 	{
-		ml_printf_at("BALLISTIC BREAKER BOTS v1.0.0\n", 0, 0);
-		ml_printf("Error: %d", (int)fresult);
+		ml_printf_at("BALLISTIC BREAKER BOTS\n", 0, 0);
+		ml_printf("Error loading titlescreen: %d", (int)fresult);
 	}
 }
