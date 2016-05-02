@@ -382,15 +382,16 @@ int run_game()
 		rectangle projectileOld = {projectileX, projectileX, projectileY, projectileY};
 		fill_rectangle(projectileOld, BLACK);
 
-		/* End turn if projectile goes off sides or bottom of level */
-		if(newX < 0 || newX > WIDTH || newY > HEIGHT_NO_UI)
+		/* End turn if projectile goes off the sides of the level */
+		if(newX < 0 || newX > WIDTH)
 		{
 			start_turn();
 			return 0;
 		}
 		
-		/* If the new position is in the ground, EXPLODE! */
-		if(newY >= level_map[newX])
+		/* If the new position is in the ground, EXPLODE!
+		 * (Also, if off the bottom of the level) */
+		if(newY >= level_map[newX] || newY > HEIGHT_NO_UI)
 		{
 			int i;
 			for(i = -EXPLOSION_RADIUS; i <= EXPLOSION_RADIUS; i++)
