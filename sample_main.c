@@ -487,7 +487,7 @@ int run_game()
 			else
 				players++;
 		}
-		else if (get_switch_press(_BV(SWE)))
+		else if (get_switch_press(_BV(SWW)))
 		{
 			if(players == 2)
 				players = 4;
