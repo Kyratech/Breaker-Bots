@@ -16,7 +16,7 @@
 #define PLAYER_WIDTH 4		//Actually width / 2 to save division later
 #define PLAYER_HEIGHT 8		//Ditto, is height / 2
 
-#define MAX_PLAYER_HP 200
+#define MAX_PLAYER_HP 100
 #define RETICULE_DISTANCE 3	//Distance from player centre
 #define MAX_PROJECTILE_POWER 20
 #define EXPLOSION_RADIUS 20	//Size of crater
