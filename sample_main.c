@@ -89,6 +89,7 @@ void start_game()
 
 	/* Generate and draw a level */
 	clear_screen();
+	free((void*) level_map);
 	level_map = generate_flat(WIDTH, 129);	
 	if(level_map != NULL)
 		draw_level(level_map, SILVER, 0, WIDTH - 1);
