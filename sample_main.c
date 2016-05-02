@@ -263,9 +263,7 @@ void main(void) {
 
     os_add_task( run_game,            30, 1);
     os_add_task( collect_delta,   60, 1);
-    os_add_task( check_switches,  60, 1);
-     
-    //start_game();
+    //os_add_task( check_switches,  60, 1);
 
     start_menu();
 
@@ -319,6 +317,12 @@ int run_game()
 	
 		reticuleX = newRX;
 		reticuleY = newRY;
+
+		if (get_switch_long(_BV(SWC)))
+		{
+			game_state = 3;
+			return 0;
+		}		
 
 		/* Read directional input. Gonna move this later. */
 		if (get_switch_rpt(_BV(SWE))) 
@@ -512,6 +516,7 @@ int run_game()
 	return 0;
 }
 
+/*
 int check_switches(int state) {
 	
 	if (get_switch_press(_BV(SWN))) {
@@ -526,8 +531,7 @@ int check_switches(int state) {
 	if (get_switch_press(_BV(SWW))) {
 	}
 		
-	if (get_switch_long(_BV(SWC)) && game_state == 1) {
-		game_state = 3;
+	if (get_switch_long(_BV(SWC))){
 	}
 
 	if (get_switch_short(_BV(SWC))) {
@@ -536,20 +540,16 @@ int check_switches(int state) {
 	if (get_switch_rpt(_BV(SWN))) {
 	}
 		
-	
-		
 	if (get_switch_rpt(_BV(SWS))) {
 	}
 		
-
-
 	if (get_switch_rpt(SWN)) {
 	}
-
 
 	if (get_switch_long(_BV(OS_CD))) {
 	}
 
 	return state;	
 }
+*/
 
