@@ -1,4 +1,4 @@
-/* COMP2215 15/16 Task 5---SKELETON */
+/* Ballistic Breaker Bots */
 
 #include "os.h"
 #include "ml_filesystem.h"
@@ -18,7 +18,7 @@
 
 #define MAX_PLAYER_HP 100
 #define RETICULE_DISTANCE 3	//Distance from player centre
-#define MAX_PROJECTILE_POWER 20
+#define MAX_PROJECTILE_POWER 20	
 #define EXPLOSION_RADIUS 20	//Size of crater
 #define BLAST_RADIUS 30		//Area of effect (in which players lose HP)
 #define MAX_EXPLOSION_DAMAGE 50
@@ -55,6 +55,11 @@ FIL File;  						/* FAT File */
 
 int position = 0;
 
+/*
+ * Excuse lousy commenting, but I've already lost nearly all of it to a git cockup.
+ * 
+ * Actually, no commenting because life's too short to do it all again and I just want to cry myself to sleep.
+ */
 void start_menu()
 {
 	game_state = 4;
