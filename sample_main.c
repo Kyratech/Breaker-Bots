@@ -33,18 +33,18 @@ int check_switches(int);
 void start_turn();
 void draw_HP_UI();
 
-sprite *reticule_SPR;
-sprite *player_SPR;
+sprite *reticule_SPR;		//Reticule sprite serves each player, reload to change colour
+sprite *player_SPR;		//Player sprite used for all players, reload to change colour or direction
 
-uint8_t current_player;
-uint8_t players = 2;
+uint8_t current_player;		//Index of the player who's turn it is
+uint8_t players = 2;		//Total number of players in the game (doesn't reduce if a player dies)
 uint8_t game_state;				
-volatile int16_t *playersX;
-volatile int16_t *playersY;
-uint8_t *players_HP;
+volatile int16_t *playersX;	//Array of all player X positions
+volatile int16_t *playersY;	//Array of all player Y positions
+uint8_t *players_HP;		//Array of all player HP
 int16_t reticuleX, reticuleY;
 
-int8_t direction;
+int8_t direction;		//X-distance to try to move currently active player (normally will be 0)
 int projectileX, projectileY;
 int proVelX, proVelY;
 int launch_speed;
@@ -56,9 +56,8 @@ FIL File;  						/* FAT File */
 int position = 0;
 
 /*
- * Excuse lousy commenting, but I've already lost nearly all of it to a git cockup.
- * 
- * Actually, no commenting because life's too short to do it all again and I just want to cry myself to sleep.
+ * Enters the start-menu state
+ * Attempts to draw the start menu, and sets up the UI
  */
 void start_menu()
 {
@@ -66,13 +65,19 @@ void start_menu()
 
 	clear_screen();	
 	draw_titlescreen(&FatFs);
+	
 	display_color(CRIMSON, BLACK);
 	ml_printf_at("%s", 135, 85, VERSION);
+	
 	display_color(WHITE, BLACK);
     	ml_printf_at("CENTRE to start", 5, 105);
     	ml_printf_at("< %u Players >", 5, 115, players);
 }
 
+/*
+ * Enters the ended-game state
+ * Frees up some of the pointers that we no longer need
+ */
 void end_game()
 {
 	game_state = 5;
@@ -84,10 +89,13 @@ void end_game()
 	ml_printf_at("CENTRE to end game", 120, 120);
 }
 
+/*
+ * Set up the required initial conditions for a match, and switch to playing state
+ */
 void start_game()
 {
 	/* Seed the RNG */
-	srand(4);
+	srand(TCNT1);
 
 	/* Load in the sprites */
 	reticule_SPR = reticule(0);
@@ -265,6 +273,9 @@ void draw_HP_UI()
 
 void main(void) {
     os_init();
+
+    /* Start the timer that will seed the RNG */
+    TCCR1B |= (1 << CS10);
 
     os_add_task( run_game,            30, 1);
     os_add_task( collect_delta,   60, 1);
