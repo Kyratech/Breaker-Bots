@@ -151,6 +151,10 @@ void start_game()
 	start_turn();
 }
 
+/*
+ * Checks to see if there are enough alive players to continue the game
+ * If so, control switches to the next player
+ */
 void start_turn()
 {
 	/* If only one player remains, declare them winner. */
@@ -206,6 +210,7 @@ void start_turn()
 		current_player = (current_player + 1) % players;
 	}
 
+	/* Re-colour the reticule for the current player */
 	free_sprite(reticule_SPR);
 	reticule_SPR = reticule(current_player);
 
@@ -221,7 +226,7 @@ void start_turn()
 
 	/* Generate a random(ish) wind for the turn */
 	wind_velocity = rand() % 21;
-	
+
 	rectangle *wind_bar = malloc(sizeof(rectangle));
 	uint16_t wind_colour;
 	fill_rectangle(wind_empty, BLACK);
@@ -252,6 +257,9 @@ void start_turn()
 	free(wind_bar);
 }
 
+/*
+ * Draw the HP of all players at the top of the screen
+ */
 void draw_HP_UI()
 {
 	rectangle UI_rec = {0, WIDTH, 0, 15};
@@ -259,12 +267,15 @@ void draw_HP_UI()
 
 	display_color(BLUE, BLACK);
 	ml_printf_at("BLUE: %u", 5, 5, players_HP[0]);
+	
 	display_color(RED, BLACK);
 	ml_printf_at("RED: %u", 85, 5, players_HP[1]);
+	
 	if(players >= 3)
 	{
 		display_color(YELLOW, BLACK);
 	        ml_printf_at("YELLOW: %u", 165, 5, players_HP[2]);
+		
 		if(players == 4)
 		{
 			display_color(GREEN, BLACK);
@@ -273,6 +284,9 @@ void draw_HP_UI()
 	}
 }
 
+/*
+ * Program entry point
+ */
 void main(void) {
     os_init();
 
@@ -287,10 +301,11 @@ void main(void) {
 
     sei();
     for(;;){}
-    
 }
 
-
+/*
+ * Read the position of the rotary encoder, in the range [0,360)
+ */
 int collect_delta(int state) {
 	position += os_enc_delta();
 	if(position >= 360)
@@ -301,6 +316,10 @@ int collect_delta(int state) {
 	return state;
 }
 
+/*
+ * Change to projectile state.
+ * Move projectile to firing position and work out initial velocity
+ */
 void fire_projectile()
 {
 	game_state = 2;
@@ -314,7 +333,9 @@ void fire_projectile()
 	proVelY = (corrected_launch_speed * ml_sin(position));
 }
 
-
+/*
+ * Main function to run one tick of the game
+ */
 int run_game()
 {
 	cli();
@@ -336,13 +357,14 @@ int run_game()
 		reticuleX = newRX;
 		reticuleY = newRY;
 
+		/* Read firing input */
 		if (get_switch_long(_BV(SWC)))
 		{
 			game_state = 3;
 			return 0;
 		}		
 
-		/* Read directional input. Gonna move this later. */
+		/* Read directional input.*/
 		if (get_switch_rpt(_BV(SWE))) 
 		{
 			direction = 4;
@@ -379,17 +401,16 @@ int run_game()
 		/* Cancel movement if trying to climb to high or off the sides of the screen */
 		if(player_collision || playersY[current_player] - newY > MAX_CLIMB_HEIGHT || newX <= PLAYER_WIDTH || newX + PLAYER_WIDTH > WIDTH)
 		{
+			/* DEBUGGING prints: */
 			//display_string_xy("Error\n", 10, 10);
 			//ml_printf("Cannot move there... (%u,%u) to (%u,%u)", playersX[0], playersY[0], newX, newY);
 			return 0;
 		}
 		
 		rectangle playerOld = {playersX[current_player] - PLAYER_WIDTH, playersX[current_player] + PLAYER_WIDTH - 1, playersY[current_player] - PLAYER_HEIGHT, playersY[current_player] + PLAYER_HEIGHT - 1};
-		//rectangle playerNew = {newX - PLAYER_WIDTH, newX + PLAYER_WIDTH - 1, newY - PLAYER_HEIGHT, newY + PLAYER_HEIGHT - 1};
 
 		fill_rectangle(playerOld, BLACK);
 		fill_sprite(player_SPR, newX, newY);
-		//fill_rectangle(playerNew, BLUE);
 		
 		playersX[current_player] = newX;
 		playersY[current_player] = newY;
@@ -430,8 +451,6 @@ int run_game()
 			}
 
 			draw_level(level_map, SILVER, newX - EXPLOSION_RADIUS, newX + EXPLOSION_RADIUS);
-			//rectangle player = {blueX - PLAYER_WIDTH, blueX + PLAYER_WIDTH - 1, blueY - PLAYER_HEIGHT, blueY + PLAYER_HEIGHT - 1};
-			//fill_rectangle(player, BLUE);
 
 			/* Check players for damage + redraw them */
 			for(i = 0; i < players; i++)
@@ -481,7 +500,8 @@ int run_game()
 	else if(game_state == 3)
 	{
 		/* Increase the launch speed while the fire button is held */
-		if (get_switch_state(_BV(SWC))) {
+		if (get_switch_state(_BV(SWC)))
+		{
 			launch_speed++;
 			rectangle bar = {POWER_BAR_START, POWER_BAR_START + launch_speed, 231, 236};
 			fill_rectangle(bar, WHITE);
@@ -534,6 +554,7 @@ int run_game()
 	return 0;
 }
 
+/* Legacy code: programmer reminder of how to read inputs. */
 /*
 int check_switches(int state) {
 	
