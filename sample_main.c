@@ -8,7 +8,7 @@
 #include "ballistics_titlescreen.h"
 #include <stdlib.h>
 
-#define VERSION "v1.0.3"
+#define VERSION "v1.1.0"
 
 #define HEIGHT 240
 #define WIDTH 320
