@@ -157,6 +157,13 @@ void start_game()
  */
 void start_turn()
 {
+	/* Update the HP UI */
+	draw_HP_UI();
+
+	/* Reset the power bar */
+	launch_speed = 0;
+	fill_rectangle(power_empty, BLACK);
+
 	/* If only one player remains, declare them winner. */
 	uint8_t i;
 	uint8_t player_left; //Record last player left (meaningless if more than 1 survivor)
@@ -216,13 +223,6 @@ void start_turn()
 
 	/* Change to movement phase */
 	game_state = 1;
-
-	/* Update the HP UI */
-	draw_HP_UI();
-	
-	/* Reset the power bar */
-	launch_speed = 0;
-	fill_rectangle(power_empty, BLACK);
 
 	/* Generate a random(ish) wind for the turn */
 	wind_velocity = rand() % 21;
