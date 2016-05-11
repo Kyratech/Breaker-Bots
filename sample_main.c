@@ -127,11 +127,13 @@ void start_game()
 		player_SPR = botleft(i);
 		fill_sprite(player_SPR, playersX[i], playersY[i]);
 	}
-	current_player = 0;
+
+	/* Pick a random player to ... go last
+	 * First call to start_turn will cycle to next player. Poor sod. */
+	current_player = rand() % players;
+
 	reticuleX = (playersX[current_player] + (RETICULE_DISTANCE * ml_cos(position))/100);
 	reticuleY = (playersY[current_player] + (RETICULE_DISTANCE * ml_sin(position))/100);
-
-
 
 	/* Initialise movement variables */
 	direction = 0;
