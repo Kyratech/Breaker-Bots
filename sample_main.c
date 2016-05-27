@@ -125,7 +125,7 @@ void start_game()
 
 		free_sprite(player_SPR);
 		player_SPR = botleft(i);
-		fill_sprite(player_SPR, playersX[i], playersY[i]);
+		fill_sprite(player_SPR, playersX[i], playersY[i], HEIGHT_NO_UI, WIDTH);
 	}
 
 	/* Pick a random player to ... go last
@@ -348,11 +348,11 @@ int run_game()
 		int16_t newRY = (playersY[current_player] + (RETICULE_DISTANCE * ml_sin(position))/100);
 		
 		rectangle reticuleOld = {reticuleX - reticule_SPR->width / 2, reticuleX + reticule_SPR->width / 2 - 1, reticuleY - reticule_SPR->height / 2, reticuleY + reticule_SPR->height / 2 - 1};
-		draw_background(level_map, SILVER, reticuleOld);
+		draw_background(level_map, SILVER, reticuleOld, HEIGHT_NO_UI, WIDTH);
 
 		//fill_rectangle(reticuleOld, BLACK);
 		if(newRX >= 0 && newRX < WIDTH && newRY >= 0 && newRY < HEIGHT)
-			fill_sprite(reticule_SPR, newRX, newRY);
+			fill_sprite(reticule_SPR, newRX, newRY, HEIGHT_NO_UI, WIDTH);
 	
 		reticuleX = newRX;
 		reticuleY = newRY;
@@ -410,7 +410,7 @@ int run_game()
 		rectangle playerOld = {playersX[current_player] - PLAYER_WIDTH, playersX[current_player] + PLAYER_WIDTH - 1, playersY[current_player] - PLAYER_HEIGHT, playersY[current_player] + PLAYER_HEIGHT - 1};
 
 		fill_rectangle(playerOld, BLACK);
-		fill_sprite(player_SPR, newX, newY);
+		fill_sprite(player_SPR, newX, newY, HEIGHT_NO_UI, WIDTH);
 		
 		playersX[current_player] = newX;
 		playersY[current_player] = newY;
@@ -473,7 +473,7 @@ int run_game()
 					free_sprite(player_SPR);
 					player_SPR = botleft(i);
 					playersY[i] = ml_min(level_map[playersX[i] - PLAYER_WIDTH], level_map[playersX[i] + PLAYER_WIDTH - 1]) - PLAYER_HEIGHT;
-					fill_sprite(player_SPR, playersX[i], playersY[i]);
+					fill_sprite(player_SPR, playersX[i], playersY[i], HEIGHT_NO_UI, WIDTH);
 				}
 			}
 

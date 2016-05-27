@@ -16,7 +16,6 @@
 
 lcd display;
 
-void draw_pixel(uint16_t x, uint16_t y, uint16_t colour);
 
 void init_lcd()
 {
@@ -185,9 +184,9 @@ void fill_rectangle_indexed(rectangle r, uint16_t* col)
             write_data16(*col++);
 }
 
-void draw_pixel(uint16_t x, uint16_t y, uint16_t colour)
+void draw_pixel(uint16_t x, uint16_t y, uint16_t colour, uint8_t max_height, uint16_t max_width)
 {
-	if(x < LCDHEIGHT && y < LCDWIDTH)
+	if(x < max_width && y < max_height)
 	{
 		write_cmd(COLUMN_ADDRESS_SET);
 		write_data16(x);
@@ -200,7 +199,7 @@ void draw_pixel(uint16_t x, uint16_t y, uint16_t colour)
 	}
 }
 
-void fill_sprite(sprite* spr, uint16_t posX, uint16_t posY)
+void fill_sprite(sprite* spr, uint16_t posX, uint16_t posY, uint8_t max_height, uint16_t max_width)
 {
     uint16_t i,j;
     uint16_t pivX = posX - spr->width / 2;
@@ -213,7 +212,7 @@ void fill_sprite(sprite* spr, uint16_t posX, uint16_t posY)
 		uint16_t col = spr->pixels[i * spr->width + j];
 		if(col != spr->trans_colour)
 		{
-        		draw_pixel(pivX + j, pivY + i, col);
+        		draw_pixel(pivX + j, pivY + i, col, max_height, max_width);
 		}
 	}
     }
@@ -241,9 +240,9 @@ void draw_level(uint8_t* level_map, uint16_t colour, int16_t start, int16_t end)
 }
 
 /* Fill a rectangle with the colours that match the level geometry */
-void draw_background(uint8_t* level_map, uint16_t colour, rectangle rec)
+void draw_background(uint8_t* level_map, uint16_t colour, rectangle rec, uint8_t max_height, uint16_t max_width)
 {
-	rectangle rec_clamped = {ml_clamp(0, LCDHEIGHT - 1, rec.left), ml_clamp(0, LCDHEIGHT - 1, rec.right), ml_clamp(0, LCDWIDTH - 1, rec.top), ml_clamp(0, LCDWIDTH - 1, rec.bottom)};
+	rectangle rec_clamped = {ml_clamp(0, max_width, rec.left), ml_clamp(0, max_width, rec.right), ml_clamp(0, max_height, rec.top), ml_clamp(0, max_height, rec.bottom)};
 	fill_rectangle(rec_clamped, BLACK);
 
 	unsigned i;

@@ -29,12 +29,12 @@ void draw_titlescreen(FATFS *FatFs)
 					unsigned colour_index;
 					if(sscanf(contents + i * 2, "%2u", &colour_index) != 0)
 					{
-						draw_pixel(x + i, y, key[colour_index]);
+						draw_pixel(x + i, y, key[colour_index], LCDWIDTH, LCDHEIGHT);
 					}
 				}
 			}
 			else
-				draw_pixel(319, 239, 0xFFFF);
+				draw_pixel(319, 239, 0xFFFF, LCDWIDTH, LCDHEIGHT);
 		}
 
 		f_close(&file);
